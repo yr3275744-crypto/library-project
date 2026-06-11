@@ -18,7 +18,7 @@ def create_books_table():
                    title VARCHAR(50) NOT NULL,
                    author VARCHAR(50) NOT NULL,
                    genre ENUM('Fiction', 'Non-Fiction', 'Science', 'History', 'Other') NOT NULL,
-                   is_available BOOL NOT NULL,
+                   is_available BOOL NOT NULL DEFAULT TRUE,
                    borrowed_by_member_id INT
                    );""")
 
