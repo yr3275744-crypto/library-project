@@ -137,7 +137,7 @@ docker run --name library -e MYSQL_ROOT_PASSWORD=library_manager -e MYSQL_DATABA
 git clone https://github.com/yr3275744-crypto/library-project.git
 
 ### Install the repuirements
-pip install requirements
+pip install requirements.txt
 
 ### Play the server
 py main.py
