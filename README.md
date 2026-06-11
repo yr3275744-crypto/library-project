@@ -136,8 +136,13 @@ docker run --name library -e MYSQL_ROOT_PASSWORD=library_manager -e MYSQL_DATABA
 ### Clone the files
 git clone https://github.com/yr3275744-crypto/library-project.git
 
+### create venv - windose
+py -m venv venv
+
+.\venv\Scripts\activate
+
 ### Install the repuirements
-pip install requirements.txt
+py -m pip install requirements.txt
 
 ### Play the server
 py main.py
