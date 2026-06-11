@@ -1,0 +1,2 @@
+class BookDB:
+    pass
