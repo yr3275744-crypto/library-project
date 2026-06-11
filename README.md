@@ -107,7 +107,7 @@ library-api/
 
 - PUT /members/{id}/deactivate 
 
-- PUT H /members/{id}/activate
+- PUT /members/{id}/activate
 
 ### Reports
 
