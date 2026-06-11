@@ -1,4 +1,13 @@
-from db_connection import get_connection
+from pydantic import BaseModel
+from database.db_connection import get_connection
+
+class BookTypes(BaseModel):
+    title: str
+    author: str
+    genre: str
+    is_available: bool = True
+    borrowed_by_member_id: int | None = None
+
 
 class BookDB:
     """docstring"""
@@ -6,12 +15,12 @@ class BookDB:
     def __init__(self):
         pass
 
-    def create_book(self,titel:str, author:str, genre:str):
+    def create_book(self,body:BookTypes):
         """docstring"""
         connection = get_connection()
         cursor = connection.cursor()
         
-        field_tuple = (titel, author, genre)
+        field_tuple = (body.title, body.author, body.genre)
         cursor.execute("INSERT INTO books (title, author, genre) VALUES (%s, %s, %s)", field_tuple)
 
         id = cursor.lastrowid
@@ -24,4 +33,4 @@ class BookDB:
 
 if __name__ == "__main__":
     books_manager = BookDB()
-    print(books_manager.create_book("avada", "bob", "Fiction"))
+    print(books_manager.create_book(BookTypes(title="bible", author="gu d", genre= "sgfdgdgd")))

@@ -1,4 +1,16 @@
-from fastapi import APIRouter
+import mysql
+from fastapi import APIRouter, HTTPException
+from database.book_db import BookDB, BookTypes
+
+books_managr = BookDB()
 
 router = APIRouter()
 
+@router.post("/books", status_code = 201)
+def create_book(body:BookTypes):
+    
+    try:
+        return books_managr.create_book(body)
+    
+    except mysql.connector.errors.DatabaseError:
+        raise HTTPException(400, detail = "Invalid gener.")
