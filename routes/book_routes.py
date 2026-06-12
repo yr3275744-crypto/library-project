@@ -19,3 +19,13 @@ def create_book(body:BookTypes):
 def get_all_books():
     """docstring"""
     return books_managr.get_all_books()
+
+@router.get("/books/{id}")
+def get_by_id(id:int):
+    """docstring"""
+    row = books_managr.get_book_by_id(id)
+    
+    if not row:
+        raise HTTPException(status_code = 404, detail = "The book is not found")
+    
+    return row

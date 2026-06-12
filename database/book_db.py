@@ -44,6 +44,18 @@ class BookDB:
         connection.close()
         return rows
 
+    def get_book_by_id(self, id:int):
+        """docstring"""
+        connection = get_connection()
+        cursor = connection.cursor(dictionary=True)
+
+        cursor.execute(f"SELECT * FROM books WHERE id = {id}")
+        row = cursor.fetchone()
+
+        cursor.close()
+        connection.close()
+        return row
+
 if __name__ == "__main__":
     books_manager = BookDB()
     # print(books_manager.create_book(BookTypes(title="bible", author="gu d", genre= "sgfdgdgd")))
