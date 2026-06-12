@@ -1,3 +1,5 @@
+#TODO: add commit every time!
+
 from pydantic import BaseModel
 from database.db_connection import get_connection
 
@@ -22,6 +24,7 @@ class BookDB:
         
         field_tuple = (body.title, body.author, body.genre)
         cursor.execute("INSERT INTO books (title, author, genre) VALUES (%s, %s, %s)", field_tuple)
+        connection.commit()
 
         id = cursor.lastrowid
         cursor.close()
@@ -29,8 +32,19 @@ class BookDB:
         
         return id
     
+    def get_all_books(self):
+        """docstring"""
+        connection = get_connection()
+        cursor = connection.cursor(dictionary=True)
 
+        cursor.execute("SELECT * FROM books")
+        rows = cursor.fetchall()
+
+        cursor.close()
+        connection.close()
+        return rows
 
 if __name__ == "__main__":
     books_manager = BookDB()
-    print(books_manager.create_book(BookTypes(title="bible", author="gu d", genre= "sgfdgdgd")))
+    # print(books_manager.create_book(BookTypes(title="bible", author="gu d", genre= "sgfdgdgd")))
+    print(books_manager.get_all_books())
