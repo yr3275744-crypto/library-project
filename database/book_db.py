@@ -3,7 +3,7 @@
 from pydantic import BaseModel
 from database.db_connection import get_connection
 
-class BookTypes(BaseModel):
+class BookType(BaseModel):
     title: str
     author: str
     genre: str
@@ -17,7 +17,7 @@ class BookDB:
     def __init__(self):
         pass
 
-    def create_book(self,body:BookTypes):
+    def create_book(self,body:BookType) -> int:
         """docstring"""
         connection = get_connection()
         cursor = connection.cursor()
@@ -32,7 +32,7 @@ class BookDB:
         
         return id
     
-    def get_all_books(self):
+    def get_all_books(self) -> list:
         """docstring"""
         connection = get_connection()
         cursor = connection.cursor(dictionary=True)
@@ -44,17 +44,34 @@ class BookDB:
         connection.close()
         return rows
 
-    def get_book_by_id(self, id:int):
+    def get_book_by_id(self, id:int) -> list | None:
         """docstring"""
         connection = get_connection()
         cursor = connection.cursor(dictionary=True)
 
-        cursor.execute(f"SELECT * FROM books WHERE id = {id}")
+        cursor.execute("SELECT * FROM books")
         row = cursor.fetchone()
 
         cursor.close()
         connection.close()
-        return row
+        return row if row else None
+
+    def update_book(self, id:int, data:BookType) -> bool:
+        """docstring"""
+        connection = get_connection()
+        cursor = connection.cursor()
+
+        query = """UPDATE books 
+        SET title = %s , author = %s, genre = %s, is_available = %s, borrowed_by_member_id = %s 
+        WHERE id = %s"""
+        values_list = [data.title, data.author, data.genre, data.is_available, data.borrowed_by_member_id] + [id]
+        
+        cursor.execute(query, values_list)
+        connection.commit()
+        
+        cursor.close()
+        connection.close()
+        return True
 
 if __name__ == "__main__":
     books_manager = BookDB()
