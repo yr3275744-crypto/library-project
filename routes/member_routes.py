@@ -10,7 +10,7 @@ router = APIRouter()
 @router.post("/members", status_code = 201)
 def create_member(body:MemberType):
     """docstring"""
-    
+    connection = None
     try:
         connection = get_connection()
         id = member_db.create_member(body, connection)
@@ -19,24 +19,37 @@ def create_member(body:MemberType):
     except mysql.connector.errors.IntegrityError:
         raise HTTPException(status_code = 409, detail = "The email addres is already exists")
     
+    except Exception:
+        raise HTTPException(status_code=500, detail= "Somthing get wrong")
+    
     finally:
-        connection.close()
+        if connection:
+            connection.close()
     
     
 
 @router.get("/members")
 def get_all_members():
     """docstring"""
-    connection = get_connection()
+    connection = None
+    try:
+        connection = get_connection()
+        
+        rows = member_db.get_all_members(connection)
+        
+        connection.close()
+        return rows
+    except Exception:
+        raise HTTPException(status_code = 500, detail = "Somthing get wrong")
     
-    rows = member_db.get_all_members(connection)
-    
-    connection.close()
-    return rows
+    finally:
+        if connection:
+            connection.close()
 
 @router.get("/members/{id}")
 def get_member_by_id(id:int):
     """docstring"""
+    connection = None
     try:
         connection = get_connection()
         row = member_db.get_member_by_id(id, connection)
@@ -49,5 +62,5 @@ def get_member_by_id(id:int):
         raise HTTPException(status_code = 500, detail= "Somthing get wrong")
     
     finally:
-        connection.close()
-
+        if connection:
+            connection.close()
