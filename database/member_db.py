@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-import mysql
+from mysql import connector
 
 class MemberType(BaseModel):
     """docstring"""
@@ -15,7 +15,7 @@ class MemberDB:
     def __init__(self):
         pass
 
-    def create_member(self, data:MemberType, connection:PooledMySQLConnection | MySQLConnectionAbstract):
+    def create_member(self, data:MemberType, connection:connector.PooledMySQLConnection | connector.MySQLConnectionAbstract):
         """docstring"""
         cursor = connection.cursor()
         values_tuple = (data.name, data.email, data.is_active, data.total_borrows)
@@ -26,3 +26,13 @@ class MemberDB:
         id = cursor.lastrowid
         cursor.close()
         return id
+    
+    def get_all_members(self, connection:connector.PooledMySQLConnection | connector.MySQLConnectionAbstract):
+        """docstring"""
+        cursor = connection.cursor()
+
+        cursor.execute("SELECT * FROM members")
+        rows = cursor.fetchall()
+
+        cursor.close()
+        return rows
