@@ -64,3 +64,23 @@ def get_member_by_id(id:int):
     finally:
         if connection:
             connection.close()
+
+@router.put("/members/{id}")
+def update_member(id:int, body:MemberType):
+    """docstring"""
+    connection = None
+    try:
+        connection = get_connection()
+        is_updated = member_db.update_member(id, body, connection)
+        if is_updated:
+            return {"message": f"The member {id} is updated succesffully"}
+    
+    except ValueError:
+        raise HTTPException(status_code = 404, detail = "The member is not found")
+    
+    except Exception:
+        raise HTTPException(status_code=500, detail= "Somthing get wrong")
+
+    finally:
+        if connection:
+            connection.close()

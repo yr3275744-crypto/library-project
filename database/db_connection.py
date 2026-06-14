@@ -36,8 +36,8 @@ def create_members_table():
                    id INT PRIMARY KEY AUTO_INCREMENT,
                    name VARCHAR(50) NOT NULL,
                    email VARCHAR(255) UNIQUE NOT NULL,
-                   is_active BOOL NOT NULL,
-                   total_borrows INT NOT NULL
+                   is_active BOOL NOT NULL DEFAULT TRUE,
+                   total_borrows INT NOT NULL DEFAULT 0
                    )""")
 
     connection.commit()
