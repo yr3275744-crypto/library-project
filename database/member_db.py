@@ -76,7 +76,7 @@ class MemberDB:
         cursor.close()
         return True
     
-    def deactivate_number(self, id:int, connection:connector.PooledMySQLConnection | connector.MySQLConnectionAbstract) -> int:
+    def deactivate_mumber(self, id:int, connection:connector.PooledMySQLConnection | connector.MySQLConnectionAbstract) -> bool:
         """docstring"""
         the_member = self.check_is_exists(id, connection)
         if not the_member:
@@ -91,6 +91,20 @@ class MemberDB:
 
         return True
 
+    def activate_member(self, id:int, connection:connector.PooledMySQLConnection | connector.MySQLConnectionAbstract) -> bool:
+        """docstring"""
+        the_member = self.check_is_exists(id, connection)
+        if not the_member:
+            raise ValueError("The member does not found")
+
+        cursor = connection.cursor()
+
+        cursor.execute("UPDATE members SET is_active = True WHERE id = %s", (id,))
+
+        connection.commit()
+        cursor.close()
+
+        return True
 
 if __name__ == "__main__":
     m = MemberDB()
@@ -98,5 +112,5 @@ if __name__ == "__main__":
     connection = get_connection()
     # id = m.update_member(15, t, connection)
     # print(id)
-    print(m.deactivate_number(1, connection))
+    print(m.activate_member(1, connection))
     connection.close()
