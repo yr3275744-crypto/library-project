@@ -4,10 +4,10 @@ from pydantic import BaseModel
 from database.db_connection import get_connection
 
 class BookType(BaseModel):
-    title: str
-    author: str
-    genre: str
-    is_available: bool = True
+    title: str | None = None
+    author: str | None = None
+    genre: str | None = None
+    is_available: bool | None = None
     borrowed_by_member_id: int | None = None
 
 
@@ -23,9 +23,13 @@ class BookDB:
         cursor = connection.cursor()
         
         if body.genre not in self.VALIDE_GENER:
-            raise ValueError("Invalid input.")
-        
+            raise ValueError("Invalid input. You must enter a valid gener")
+
         field_tuple = (body.title, body.author, body.genre)
+        
+        if not field_tuple[0] or not field_tuple[1]:
+            raise ValueError("Invalid input. You must enter a valid name and email.")
+
         cursor.execute("INSERT INTO books (title, author, genre) VALUES (%s, %s, %s)", field_tuple)
         connection.commit()
 
@@ -59,27 +63,31 @@ class BookDB:
         connection.close()
         return row if row else None
 
-    def update_book(self, id:int, data:BookType) -> bool:
+    def update_book(self, id:int, data:BookType) -> int:
         """docstring"""
         connection = get_connection()
         cursor = connection.cursor()
-
-        if data.genre not in self.VALIDE_GENER:
-            raise ValueError("Invalid input.")
         
-        query = """UPDATE books 
-        SET title = %s , author = %s, genre = %s, is_available = %s, borrowed_by_member_id = %s 
-        WHERE id = %s"""
-        values_list = [data.title, data.author, data.genre, data.is_available, data.borrowed_by_member_id] + [id]
+        values_dict = data.model_dump(exclude_none = True)
+        values_list = list(values_dict.values()) + [id]
+        query_names_str = ", ".join([key + " = %s" for key in values_dict])
+        query = "UPDATE books SET " + query_names_str + " WHERE id = %s"
+        if values_dict.get("gener"):
+            if values_dict.get("gener") not in self.VALIDE_GENER:
+                raise ValueError("Invalid input. You must enter a valid gener")
         
         cursor.execute(query, values_list)
         connection.commit()
         
+        cursor.fetchall()
+        count = cursor.rowcount
         cursor.close()
         connection.close()
-        return True
+        return count
 
 if __name__ == "__main__":
     books_manager = BookDB()
     # print(books_manager.create_book(BookTypes(title="bible", author="gu d", genre= "sgfdgdgd")))
     print(books_manager.get_all_books())
+    t = BookType(title= "aaa")
+    print(books_manager.update_book(8, t))

@@ -16,6 +16,9 @@ def create_member(body:MemberType):
         id = member_db.create_member(body, connection)
         return {"mesaage": f"member {id} is created succesffully"}
     
+    except ValueError:
+        raise HTTPException(status_code = 400, detail = "Invlid input. You must anter name and email.")
+    
     except mysql.connector.errors.IntegrityError:
         raise HTTPException(status_code = 409, detail = "The email addres is already exists")
     

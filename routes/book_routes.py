@@ -10,10 +10,11 @@ router = APIRouter()
 def create_book(body:BookType):
     """docstring"""
     try:
-        return books_managr.create_book(body)
-    
+        id = books_managr.create_book(body)
+        return {"message": f"The book {id} is created succesffully"}
+
     except ValueError as e:
-        raise HTTPException(400, detail = "Invalid input")
+        raise HTTPException(400, detail = "Invalid input. You must enter a valid name, email and gener.")
     
 @router.get("/books")
 def get_all_books():
@@ -35,6 +36,10 @@ def update_book(id:int, body:BookType):
     """docstribg"""
     try:
         is_updated = books_managr.update_book(id, body)
-        return {"message":"The book is updated successfully"}
+        if is_updated:
+            return {"message":"The book is updated successfully"}
+        else:
+            raise HTTPException(status_code= 404, detail= "The book is not found or have no change.")
+    
     except ValueError as e:
-        raise HTTPException(400, detail = "Invalid input")
+        raise HTTPException(400, detail = "Invalid input. You must enter a valid name, email and gener.")

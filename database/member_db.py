@@ -19,6 +19,8 @@ class MemberDB:
         """docstring"""
         cursor = connection.cursor()
         values_tuple = (data.name, data.email)
+        if not values_tuple[0] or not values_tuple[1]:
+            raise ValueError("Invlid input. You must anter name and email.")
 
         cursor.execute("INSERT INTO members (name, email) VALUES (%s, %s)", values_tuple)
         connection.commit()
