@@ -1,7 +1,6 @@
 #TODO: add commit every time!
 
 from pydantic import BaseModel
-from database.db_connection import get_connection
 
 class BookType(BaseModel):
     title: str | None = None
@@ -17,9 +16,8 @@ class BookDB:
     def __init__(self):
         pass
 
-    def create_book(self,body:BookType) -> int:
+    def create_book(self, body:BookType, connection ) -> int:
         """docstring"""
-        connection = get_connection()
         cursor = connection.cursor()
         
         if body.genre not in self.VALIDE_GENER:
@@ -35,37 +33,31 @@ class BookDB:
 
         id = cursor.lastrowid
         cursor.close()
-        connection.close()
         
         return id
     
-    def get_all_books(self) -> list:
+    def get_all_books(self, connection) -> list:
         """docstring"""
-        connection = get_connection()
         cursor = connection.cursor(dictionary=True)
 
         cursor.execute("SELECT * FROM books")
         rows = cursor.fetchall()
 
         cursor.close()
-        connection.close()
         return rows
 
-    def get_book_by_id(self, id:int) -> list | None:
+    def get_book_by_id(self, id:int, connection) -> list | None:
         """docstring"""
-        connection = get_connection()
         cursor = connection.cursor(dictionary=True)
 
         cursor.execute("SELECT * FROM books")
         row = cursor.fetchone()
 
         cursor.close()
-        connection.close()
         return row if row else None
 
-    def update_book(self, id:int, data:BookType) -> int:
+    def update_book(self, id:int, data:BookType, connection) -> int:
         """docstring"""
-        connection = get_connection()
         cursor = connection.cursor()
         
         values_dict = data.model_dump(exclude_none = True)
@@ -82,7 +74,6 @@ class BookDB:
         cursor.fetchall()
         count = cursor.rowcount
         cursor.close()
-        connection.close()
         return count
 
 if __name__ == "__main__":

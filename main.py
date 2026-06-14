@@ -13,8 +13,10 @@ from database import db_connection, book_db, member_db
 
 def app_server():
     """docstring"""
-    db_connection.create_books_table()
-    db_connection.create_members_table()
+    connection = db_connection.Connection()
+    the_initalizer = db_connection.Initalizer(connection)
+    the_initalizer.create_books_table()
+    the_initalizer.create_members_table()
 
     app = FastAPI()
     app.include_router(book_routes.router)

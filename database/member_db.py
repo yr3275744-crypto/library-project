@@ -1,7 +1,7 @@
 from typing import Optional
 from pydantic import BaseModel
 from mysql import connector
-from database.db_connection import get_connection
+
 
 class MemberType(BaseModel):
     """docstring"""

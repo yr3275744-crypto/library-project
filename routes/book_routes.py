@@ -1,6 +1,7 @@
 import mysql
 from fastapi import APIRouter, HTTPException
 from database.book_db import BookDB, BookType
+from database.db_connection import Connection
 
 books_managr = BookDB()
 
@@ -9,8 +10,10 @@ router = APIRouter()
 @router.post("/books", status_code = 201)
 def create_book(body:BookType):
     """docstring"""
+    connection = None
     try:
-        id = books_managr.create_book(body)
+        connection = Connection().get_connection()
+        id = books_managr.create_book(body, connection)
         return {"message": f"The book {id} is created succesffully"}
 
     except ValueError as e:
@@ -19,23 +22,45 @@ def create_book(body:BookType):
 @router.get("/books")
 def get_all_books():
     """docstring"""
-    return books_managr.get_all_books()
+    connection = None
+    try:
+        connection = Connection().get_connection()
+        return books_managr.get_all_books(connection)
+
+    except Exception:
+        raise HTTPException(status_code=500, detail= "Somthing get wrong")
+    
+    finally:
+        if connection:
+            connection.close()
 
 @router.get("/books/{id}")
 def get_by_id(id:int):
     """docstring"""
-    row = books_managr.get_book_by_id(id)
+    connection = None
+    try:
+        connection = Connection().get_connection()
+        row = books_managr.get_book_by_id(id, connection)
+        
+        if not row:
+            raise HTTPException(status_code = 404, detail = "The book is not found")
+        
+        return row
     
-    if not row:
-        raise HTTPException(status_code = 404, detail = "The book is not found")
+    except Exception:
+        raise HTTPException(status_code=500, detail= "Somthing get wrong")
     
-    return row
+    finally:
+        if connection:
+            connection.close()
 
 @router.put("/books/{id}")
 def update_book(id:int, body:BookType):
     """docstribg"""
+    connection = None
     try:
-        is_updated = books_managr.update_book(id, body)
+        connection = Connection().get_connection()
+        is_updated = books_managr.update_book(id, body, connection)
         if is_updated:
             return {"message":"The book is updated successfully"}
         else:
@@ -43,3 +68,10 @@ def update_book(id:int, body:BookType):
     
     except ValueError as e:
         raise HTTPException(400, detail = "Invalid input. You must enter a valid name, email and gener.")
+    
+    except Exception:
+        raise HTTPException(status_code=500, detail= "Somthing get wrong")
+    
+    finally:
+        if connection:
+            connection.close()

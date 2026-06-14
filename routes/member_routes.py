@@ -2,7 +2,9 @@
 import mysql
 from fastapi import APIRouter, HTTPException
 from database.member_db import MemberDB, MemberType
-from database.db_connection import get_connection
+from database.db_connection import Connection
+
+
 member_db = MemberDB()
 
 router = APIRouter()
@@ -12,7 +14,7 @@ def create_member(body:MemberType):
     """docstring"""
     connection = None
     try:
-        connection = get_connection()
+        connection = Connection().get_connection()
         id = member_db.create_member(body, connection)
         return {"mesaage": f"member {id} is created successfully"}
     
@@ -36,7 +38,7 @@ def get_all_members():
     """docstring"""
     connection = None
     try:
-        connection = get_connection()
+        connection = Connection().get_connection()
         
         rows = member_db.get_all_members(connection)
         
@@ -54,7 +56,7 @@ def get_member_by_id(id:int):
     """docstring"""
     connection = None
     try:
-        connection = get_connection()
+        connection = Connection().get_connection()
         row = member_db.get_member_by_id(id, connection)
         if row:
             return row
@@ -73,7 +75,7 @@ def update_member(id:int, body:MemberType):
     """docstring"""
     connection = None
     try:
-        connection = get_connection()
+        connection = Connection().get_connection()
         is_updated = member_db.update_member(id, body, connection)
         if is_updated:
             return {"message": f"The member {id} is updated successfully"}
@@ -93,7 +95,7 @@ def deactivate_member(id:int) -> dict:
     """docsting"""
     connection = None
     try:
-        connection = get_connection()
+        connection = Connection().get_connection()
         is_deactive = member_db.deactivate_mumber(id, connection)
         return {"message": f"The member {id} is deactivated successfully"}
 
@@ -112,7 +114,7 @@ def activate_member(id:int) -> dict:
     """docsting"""
     connection = None
     try:
-        connection = get_connection()
+        connection = Connection().get_connection()
         is_deactive = member_db.activate_member(id, connection)
         return {"message": f"The member {id} is deactivated successfully"}
 
