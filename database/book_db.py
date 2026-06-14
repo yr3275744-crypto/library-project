@@ -22,6 +22,9 @@ class BookDB:
         connection = get_connection()
         cursor = connection.cursor()
         
+        if body.genre not in self.VALIDE_GENER:
+            raise ValueError("Invalid input.")
+        
         field_tuple = (body.title, body.author, body.genre)
         cursor.execute("INSERT INTO books (title, author, genre) VALUES (%s, %s, %s)", field_tuple)
         connection.commit()
@@ -61,6 +64,9 @@ class BookDB:
         connection = get_connection()
         cursor = connection.cursor()
 
+        if data.genre not in self.VALIDE_GENER:
+            raise ValueError("Invalid input.")
+        
         query = """UPDATE books 
         SET title = %s , author = %s, genre = %s, is_available = %s, borrowed_by_member_id = %s 
         WHERE id = %s"""

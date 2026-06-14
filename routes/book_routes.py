@@ -12,8 +12,8 @@ def create_book(body:BookType):
     try:
         return books_managr.create_book(body)
     
-    except mysql.connector.errors.DatabaseError:
-        raise HTTPException(400, detail = "Invalid gener.")
+    except ValueError as e:
+        raise HTTPException(400, detail = "Invalid input")
     
 @router.get("/books")
 def get_all_books():
@@ -36,5 +36,5 @@ def update_book(id:int, body:BookType):
     try:
         is_updated = books_managr.update_book(id, body)
         return {"message":"The book is updated successfully"}
-    except mysql.connector.errors.DatabaseError:
-        raise HTTPException(400, detail = "Invalid gener.")
+    except ValueError as e:
+        raise HTTPException(400, detail = "Invalid input")

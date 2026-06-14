@@ -15,7 +15,7 @@ class MemberDB:
     def __init__(self):
         pass
 
-    def create_member(self, data:MemberType, connection:connector.PooledMySQLConnection | connector.MySQLConnectionAbstract):
+    def create_member(self, data:MemberType, connection:connector.PooledMySQLConnection | connector.MySQLConnectionAbstract) -> int:
         """docstring"""
         cursor = connection.cursor()
         values_tuple = (data.name, data.email, data.is_active, data.total_borrows)
@@ -27,7 +27,7 @@ class MemberDB:
         cursor.close()
         return id
     
-    def get_all_members(self, connection:connector.PooledMySQLConnection | connector.MySQLConnectionAbstract):
+    def get_all_members(self, connection:connector.PooledMySQLConnection | connector.MySQLConnectionAbstract) -> list:
         """docstring"""
         cursor = connection.cursor()
 
@@ -36,3 +36,16 @@ class MemberDB:
 
         cursor.close()
         return rows
+    
+    def get_member_by_id(self, id:int, connection:connector.PooledMySQLConnection | connector.MySQLConnectionAbstract) -> dict:
+        """docstring"""
+        # try:
+        cursor = connection.cursor(dictionary = True)
+
+        cursor.execute("SELECT * FROM members WHERE id = %s", (id,))
+        row = cursor.fetchone()
+
+        cursor.close()
+        return row
+        # except connector.Error:
+        #     raise connector.Error
