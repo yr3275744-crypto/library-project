@@ -3,6 +3,8 @@ from fastapi import APIRouter, HTTPException
 from database.book_db import BookDB, BookType
 from database.db_connection import Connection
 
+import database.book_db as book_db
+
 books_managr = BookDB()
 
 router = APIRouter()
@@ -61,11 +63,11 @@ def update_book(id:int, body:BookType):
     try:
         connection = Connection().get_connection()
         is_updated = books_managr.update_book(id, body, connection)
-        if is_updated:
-            return {"message":"The book is updated successfully"}
-        else:
-            raise HTTPException(status_code= 404, detail= "The book is not found or have no change.")
+        return {"message": f"The book {id} is updated successfully"}
     
+    except book_db.BookNotFound:
+        raise HTTPException(status_code= 404, detail= "The book does not found")
+
     except ValueError as e:
         raise HTTPException(400, detail = "Invalid input. You must enter a valid name, email and gener.")
     

@@ -1,5 +1,5 @@
 #TODO: add commit every time!
-
+from fastapi import HTTPException
 from pydantic import BaseModel
 
 class BookType(BaseModel):
@@ -9,6 +9,8 @@ class BookType(BaseModel):
     is_available: bool | None = None
     borrowed_by_member_id: int | None = None
 
+class BookNotFound(Exception):
+    pass
 
 class BookDB:
     """docstring"""
@@ -50,7 +52,7 @@ class BookDB:
         """docstring"""
         cursor = connection.cursor(dictionary=True)
 
-        cursor.execute("SELECT * FROM books")
+        cursor.execute("SELECT * FROM books WHERE id = %s", (id,))
         row = cursor.fetchone()
 
         cursor.close()
@@ -58,8 +60,11 @@ class BookDB:
 
     def update_book(self, id:int, data:BookType, connection) -> int:
         """docstring"""
-        cursor = connection.cursor()
+        the_book = self.get_book_by_id(id, connection)
+        if not the_book:
+            raise BookNotFound
         
+        cursor = connection.cursor()
         values_dict = data.model_dump(exclude_none = True)
         values_list = list(values_dict.values()) + [id]
         query_names_str = ", ".join([key + " = %s" for key in values_dict])
@@ -71,10 +76,10 @@ class BookDB:
         cursor.execute(query, values_list)
         connection.commit()
         
-        cursor.fetchall()
-        count = cursor.rowcount
         cursor.close()
-        return count
+        return True
+
+
 
 if __name__ == "__main__":
     books_manager = BookDB()

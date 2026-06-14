@@ -9,7 +9,7 @@
 import uvicorn
 from fastapi import FastAPI
 from routes import book_routes, member_routes, report_routes
-from database import db_connection, book_db, member_db
+from database import db_connection
 
 def app_server():
     """docstring"""
