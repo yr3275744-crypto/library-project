@@ -14,7 +14,7 @@ def create_member(body:MemberType):
     try:
         connection = get_connection()
         id = member_db.create_member(body, connection)
-        return {"mesaage": f"member {id} is created succesffully"}
+        return {"mesaage": f"member {id} is created successfully"}
     
     except ValueError:
         raise HTTPException(status_code = 400, detail = "Invlid input. You must anter name and email.")
@@ -76,10 +76,29 @@ def update_member(id:int, body:MemberType):
         connection = get_connection()
         is_updated = member_db.update_member(id, body, connection)
         if is_updated:
-            return {"message": f"The member {id} is updated succesffully"}
+            return {"message": f"The member {id} is updated successfully"}
     
     except ValueError:
-        raise HTTPException(status_code = 404, detail = "The member is not found")
+        raise HTTPException(status_code= 404, detail = "The member does not found")
+    
+    except Exception:
+        raise HTTPException(status_code=500, detail= "Somthing get wrong")
+
+    finally:
+        if connection:
+            connection.close()
+
+@router.put("/members/{id}/deactivate")
+def deactivate_member(id:int):
+    """docsting"""
+    connection = None
+    try:
+        connection = get_connection()
+        is_deactive = member_db.deactivate_number(id, connection)
+        return {"message": f"The member {id} is deactivated successfully"}
+
+    except ValueError:
+        raise HTTPException(status_code= 404, detail = "The member does not found")
     
     except Exception:
         raise HTTPException(status_code=500, detail= "Somthing get wrong")

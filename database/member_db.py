@@ -1,6 +1,7 @@
 from typing import Optional
 from pydantic import BaseModel
 from mysql import connector
+from database.db_connection import get_connection
 
 class MemberType(BaseModel):
     """docstring"""
@@ -14,6 +15,14 @@ class MemberDB:
     """docstring"""
     def __init__(self):
         pass
+
+    def check_is_exists(self, id:int, connection):
+        """docstring"""
+        cursor = connection.cursor()
+        cursor.execute("SELECT * FROM members WHERE id = %s", (id,))
+        rows = cursor.fetchall()
+        cursor.close()
+        return rows
 
     def create_member(self, data:MemberType, connection:connector.PooledMySQLConnection | connector.MySQLConnectionAbstract) -> int:
         """docstring"""
@@ -52,6 +61,9 @@ class MemberDB:
     def update_member(self, id:int, data:MemberType, connection:connector.PooledMySQLConnection | connector.MySQLConnectionAbstract) -> int:
         """docstring"""
         cursor = connection.cursor(dictionary = True)
+        the_member = self.check_is_exists()
+        if not the_member:
+            raise ValueError("The member does not found")
         
         body = data.model_dump(exclude_none= True)
         values_list = list(body.values()) + [id]
@@ -60,21 +72,31 @@ class MemberDB:
         print(query, values_list)
         cursor.execute(query, values_list)
         connection.commit()
-        
-        cursor.fetchall()
-        count = cursor.rowcount
-
-        if not count:
-            raise ValueError
-        cursor.close()
-        return count
     
+        cursor.close()
+        return True
+    
+    def deactivate_number(self, id:int, connection:connector.PooledMySQLConnection | connector.MySQLConnectionAbstract) -> int:
+        """docstring"""
+        the_member = self.check_is_exists(id, connection)
+        if not the_member:
+            raise ValueError("The member does not found")
+
+        cursor = connection.cursor()
+
+        cursor.execute("UPDATE members SET is_active = False WHERE id = %s", (id,))
+
+        connection.commit()
+        cursor.close()
+
+        return True
+
 
 if __name__ == "__main__":
-    import db_connection
     m = MemberDB()
     t = MemberType(name = "jjjj")
-    connection = db_connection.get_connection()
-    id = m.update_member(15, t, connection)
-    print(id)
+    connection = get_connection()
+    # id = m.update_member(15, t, connection)
+    # print(id)
+    print(m.deactivate_number(1, connection))
     connection.close()
