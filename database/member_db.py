@@ -106,11 +106,14 @@ class MemberDB:
 
         return True
 
-# if __name__ == "__main__":
-#     m = MemberDB()
-#     t = MemberType(name = "jjjj")
-#     connection = 
-#     # id = m.update_member(15, t, connection)
-#     # print(id)
-#     print(m.activate_member(1, connection))
-#     connection.close()
+if __name__ == "__main__":
+    import database.db_connection as db_connection
+    m = MemberDB()
+    connection = db_connection.Connection().get_connection()
+    print(m.get_member_by_id(2, connection))
+    # t = MemberType(name = "jjjj")
+
+    # id = m.update_member(15, t, connection)
+    # print(id)
+    # print(m.activate_member(1, connection))
+    # connection.close()

@@ -12,6 +12,12 @@ class BookType(BaseModel):
 class BookNotFound(Exception):
     pass
 
+class BookNotAvailable(Exception):
+    pass
+
+class MemberHasMaximum(Exception):
+    pass
+
 class BookDB:
     """docstring"""
     VALIDE_GENER = ('Fiction', 'Non-Fiction', 'Science', 'History', 'Other')
@@ -79,11 +85,50 @@ class BookDB:
         cursor.close()
         return True
 
+    def set_available(self, id:int, val:bool, member_id:int, connection) -> bool:
+        """docstring"""
+        the_book = self.get_book_by_id(id, connection)
+        if not the_book:
+            raise BookNotFound
+        
+        if not the_book.get("is_available"):
+            raise BookNotAvailable
+
+        borrows = self.count_active_borrows_by_member(member_id, connection)
+        if borrows:
+            if borrows >= 3:
+                raise MemberHasMaximum
+            
+        cursor = connection.cursor(dictionary = True)
+
+        values_tuple = (val, member_id, id)
+        cursor.execute("UPDATE books SET is_available = %s, borrowed_by_member_id = %s WHERE id = %s", values_tuple)
+
+        connection.commit()
+        cursor.close()
+        return True
+
+    def count_active_borrows_by_member(self, member_id:int, connection):
+        """docstring"""
+        cursor = connection.cursor(dictionary = True)
+
+        cursor.execute("""SELECT borrowed_by_member_id, count(*) as borrows_num 
+                       FROM books WHERE borrowed_by_member_id = %s 
+                       GROUP BY borrowed_by_member_id""", (member_id,))
+        
+        row = cursor.fetchone()
+        cursor.close()
+
+        return row.get("borrows_num") if row else None
 
 
 if __name__ == "__main__":
+    import db_connection as db_conn
     books_manager = BookDB()
+    connection = db_conn.Connection().get_connection()
+    # print(books_manager.set_available(7, 0, 2, connection))
+    print(books_manager.count_active_borrows_by_member( 3, connection))
     # print(books_manager.create_book(BookTypes(title="bible", author="gu d", genre= "sgfdgdgd")))
-    print(books_manager.get_all_books())
-    t = BookType(title= "aaa")
-    print(books_manager.update_book(8, t))
+    # print(books_manager.get_all_books())
+    # t = BookType(title= "aaa")
+    # print(books_manager.update_book(8, t))
