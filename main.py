@@ -10,19 +10,19 @@ from fastapi import FastAPI
 from routes import book_routes, member_routes, report_routes
 from database import db_connection, book_db, member_db
 
-def main():
-    app = FastAPI()
-    app.include_router(book_routes.router)
-
+def app_server():
+    """docstring"""
     db_connection.create_books_table()
     db_connection.create_members_table()
+
+    app = FastAPI()
+    app.include_router(book_routes.router)
+    app.include_router(member_routes.router)
 
     return app
 
 
 
 if __name__ == "__main__":
-    app = FastAPI()
-
-    app.include_router(book_routes.router)
+    app = app_server()
     uvicorn.run(app)
