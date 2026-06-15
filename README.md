@@ -59,7 +59,7 @@ library-api/
 
 - is_active : if themember is active = True, he can borrow a book. else False
 
-- total_borrows : the total of borrows. integer, auto-increment.
+- total_borrows : the total of borrows. integer.
 
 ## System rules
 
