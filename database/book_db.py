@@ -1,4 +1,3 @@
-#TODO: add commit every time!
 from fastapi import HTTPException
 from pydantic import BaseModel
 
@@ -6,8 +5,8 @@ class BookType(BaseModel):
     title: str | None = None
     author: str | None = None
     genre: str | None = None
-    is_available: bool | None = None
-    borrowed_by_member_id: int | None = None
+    # is_available: bool | None = None
+    # borrowed_by_member_id: int | None = None
 
 class BookNotFound(Exception):
     pass

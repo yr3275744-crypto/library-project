@@ -15,6 +15,7 @@ def get_count_by_genre():
     try:
         connection = Connection().get_connection()
         count_by_genre_list = []
+        
         for genre in books_manager.VALID_GENRE:
             count_by_genre_dict = {"genre":genre}
             count = books_manager.count_by_genre(genre, connection)
@@ -44,6 +45,22 @@ def get_summary():
         summary_dict["active_members"] = members_manager.count_active_members(connection)
 
         return summary_dict
+    
+    except Exception:
+        raise HTTPException(status_code = 500, detail = "Something get wrong")
+    
+    finally:
+        if connection:
+            connection.close()
+
+@router.get("/reports/top-member")
+def get_top_member():
+    """docstring"""
+    connection = None
+    try:
+        connection = Connection().get_connection()
+
+        return members_manager.get_top_number(connection)
     
     except Exception:
         raise HTTPException(status_code = 500, detail = "Something get wrong")

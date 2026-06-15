@@ -7,8 +7,8 @@ class MemberType(BaseModel):
     """docstring"""
     name: str | None = None
     email: str | None = None
-    is_active: Optional[bool] = None
-    total_borrows: Optional[int] = None
+    # is_active: Optional[bool] = None
+    # total_borrows: Optional[int] = None
 
 class MemberNotFound(Exception):
     pass
@@ -66,7 +66,6 @@ class MemberDB:
         values_list = list(body.values()) + [id]
         query_values_str = ", ".join([key + " = %s" for key in body])
         query = "UPDATE members SET " + query_values_str + " WHERE id = %s"
-        print(query, values_list)
         cursor.execute(query, values_list)
         connection.commit()
     

@@ -1,4 +1,3 @@
-#TODO : check if i shoode create difult value is_active in databas or in pydantic.
 import mysql
 from fastapi import APIRouter, HTTPException
 from database.member_db import MemberDB, MemberType, MemberNotFound
@@ -84,6 +83,9 @@ def update_member(id:int, body:MemberType):
     except MemberNotFound:
         raise HTTPException(status_code= 404, detail = "The member does not found")
     
+    except mysql.connector.errors.IntegrityError:
+        raise HTTPException(status_code = 409, detail = "The email addres is already exists")
+
     except Exception:
         raise HTTPException(status_code=500, detail= "Somthing get wrong")
 
