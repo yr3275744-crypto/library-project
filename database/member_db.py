@@ -13,18 +13,13 @@ class MemberType(BaseModel):
 class MemberNotFound(Exception):
     pass
 
+class MemberDoesNotActive(Exception):
+    pass
+
 class MemberDB:
     """docstring"""
     def __init__(self):
         pass
-
-    def check_is_exists(self, id:int, connection):
-        """docstring"""
-        cursor = connection.cursor()
-        cursor.execute("SELECT * FROM members WHERE id = %s", (id,))
-        rows = cursor.fetchall()
-        cursor.close()
-        return rows
 
     def create_member(self, data:MemberType, connection:connector.PooledMySQLConnection | connector.MySQLConnectionAbstract) -> int:
         """docstring"""
@@ -65,7 +60,7 @@ class MemberDB:
     def update_member(self, id:int, data:MemberType, connection:connector.PooledMySQLConnection | connector.MySQLConnectionAbstract) -> int:
         """docstring"""
         cursor = connection.cursor(dictionary = True)
-        the_member = self.check_is_exists()
+        the_member = self.get_member_by_id(id, connection)
         
         body = data.model_dump(exclude_none= True)
         values_list = list(body.values()) + [id]
@@ -80,7 +75,7 @@ class MemberDB:
     
     def deactivate_mumber(self, id:int, connection:connector.PooledMySQLConnection | connector.MySQLConnectionAbstract) -> bool:
         """docstring"""
-        the_member = self.check_is_exists(id, connection)
+        the_member = self.get_member_by_id(id, connection)
 
         cursor = connection.cursor()
 
@@ -93,7 +88,7 @@ class MemberDB:
 
     def activate_member(self, id:int, connection:connector.PooledMySQLConnection | connector.MySQLConnectionAbstract) -> bool:
         """docstring"""
-        the_member = self.check_is_exists(id, connection)
+        the_member = self.get_member_by_id(id, connection)
 
         cursor = connection.cursor()
 
@@ -106,7 +101,7 @@ class MemberDB:
 
     def increment_borrows(self, id:int, connection) -> int:
         """docstring"""
-        the_member = self.check_is_exists(id, connection)
+        the_member = self.get_member_by_id(id, connection)
         
         cursor = connection.cursor()
         cursor.execute("UPDATE members SET total_borrows = total_borrows + 1 WHERE id = %s", (id,))
@@ -116,6 +111,13 @@ class MemberDB:
         count = cursor.rowcount
         cursor.close()
         return count
+
+    def is_active(self, member_dict:dict) -> bool:
+        """docstring"""
+        if member_dict.get("is_active"):
+            return True
+        else:
+            raise MemberDoesNotActive 
 
 
 if __name__ == "__main__":

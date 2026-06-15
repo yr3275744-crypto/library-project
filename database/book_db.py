@@ -142,7 +142,9 @@ class BookDB:
     def return_book(self, id:int, member_id:int, connection) -> bool:
         """docstring"""
         the_book = self.get_book_by_id(id, connection)
-        
+        if the_book.get("is_available"):
+            raise BookNotBorrowed
+
         is_borroed_to_him = self.is_borrowed_to(id, member_id, connection)
         if not is_borroed_to_him:
             raise NotBorroedToHim

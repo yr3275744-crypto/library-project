@@ -1,9 +1,10 @@
 # TODO : (create the files.)
 # (create simple router and server.) 
 # (create the conection to the database and tables.)
-# daclarate the db classes.
+# (daclarate the db classes.)
 # (add pydantic class to book and member in their files.)
 # daclarate the routs handle the methods in the db classes.
+# add check if the emaile is already exists!
 # add mysqlo generic exception to all routs!
 # add logger and loggs.
 import uvicorn

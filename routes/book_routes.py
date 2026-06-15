@@ -89,8 +89,7 @@ def borrow_to_member(id:int, member_id:int):
         member_db_instance = member_db.MemberDB()
         member = member_db_instance.get_member_by_id(member_id, connection)
         
-        if not member.get("is_active"):
-            raise HTTPException(status_code = 409, detail = "The member is not active.")
+        member_is_active = member_db_instance.is_active(member)
         
         borrow = books_managr.borrow_book(id, member_id, connection)
         count = member_db_instance.increment_borrows(member_id, connection)
@@ -100,13 +99,16 @@ def borrow_to_member(id:int, member_id:int):
         raise HTTPException(status_code= 404, detail= "The book does not found")
     
     except book_db.BookNotAvailable:
-        raise HTTPException(status_code = 409, detail = "The book is not available")
+        raise HTTPException(status_code = 400, detail = "The book is not available")
     
     except book_db.MemberHasMaximum:
-        raise HTTPException(status_code = 409, detail = "The member has exceeded the maximum number of available books.")
+        raise HTTPException(status_code = 400, detail = "The member has exceeded the maximum number of available books.")
     
     except member_db.MemberNotFound:
         raise HTTPException(status_code= 404, detail = "The member does not found")
+    
+    except member_db.MemberDoesNotActive:
+        raise HTTPException(status_code = 400, detail = "Member is not active")
     
     except Exception:
         raise HTTPException(status_code=500, detail= "Something get wrong")
@@ -131,11 +133,17 @@ def return_book(id:int, member_id:int):
     except book_db.BookNotFound:
         raise HTTPException(status_code= 404, detail= "The book does not found")
 
-    except book_db.NotBorroedToHim:
-        raise HTTPException(status_code = 409, detail = "The book is not borrowed to this member.")
+    except member_db.MemberNotFound:
+        raise HTTPException(status_code= 404, detail = "The member does not found")
 
-    # except Exception:
-    #     raise HTTPException(status_code=500, detail= "Something get wrong")
+    except book_db.BookNotBorrowed:
+        raise HTTPException(status_code = 400, detail = "The book is not borrowed")
+
+    except book_db.NotBorroedToHim:
+        raise HTTPException(status_code = 400, detail = "The book is not borrowed to this member.")
+
+    except Exception:
+        raise HTTPException(status_code=500, detail= "Something get wrong")
     
     finally:
         if connection:
