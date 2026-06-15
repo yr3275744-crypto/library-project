@@ -15,7 +15,13 @@ class BookNotFound(Exception):
 class BookNotAvailable(Exception):
     pass
 
+class BookNotBorrowed(Exception):
+    pass
+
 class MemberHasMaximum(Exception):
+    pass
+
+class NotBorroedToHim(Exception):
     pass
 
 class BookDB:
@@ -54,7 +60,7 @@ class BookDB:
         cursor.close()
         return rows
 
-    def get_book_by_id(self, id:int, connection) -> list | None:
+    def get_book_by_id(self, id:int, connection) -> dict:
         """docstring"""
         cursor = connection.cursor(dictionary=True)
 
@@ -62,13 +68,13 @@ class BookDB:
         row = cursor.fetchone()
 
         cursor.close()
-        return row if row else None
+        if not row:
+            raise BookNotFound
+        return row 
 
     def update_book(self, id:int, data:BookType, connection) -> int:
         """docstring"""
         the_book = self.get_book_by_id(id, connection)
-        if not the_book:
-            raise BookNotFound
         
         cursor = connection.cursor()
         values_dict = data.model_dump(exclude_none = True)
@@ -85,20 +91,8 @@ class BookDB:
         cursor.close()
         return True
 
-    def set_available(self, id:int, val:bool, member_id:int, connection) -> bool:
+    def set_avilable(self, id:int, val:bool, member_id:int, connection) -> bool:
         """docstring"""
-        the_book = self.get_book_by_id(id, connection)
-        if not the_book:
-            raise BookNotFound
-        
-        if not the_book.get("is_available"):
-            raise BookNotAvailable
-
-        borrows = self.count_active_borrows_by_member(member_id, connection)
-        if borrows:
-            if borrows >= 3:
-                raise MemberHasMaximum
-            
         cursor = connection.cursor(dictionary = True)
 
         values_tuple = (val, member_id, id)
@@ -120,6 +114,40 @@ class BookDB:
         cursor.close()
 
         return row.get("borrows_num") if row else None
+
+    def borrow_book(self, id:int, member_id:int, connection) -> bool:
+        """docstring"""
+        the_book = self.get_book_by_id(id, connection)
+
+        if not the_book.get("is_available"):
+            raise BookNotAvailable
+
+        borrows = self.count_active_borrows_by_member(member_id, connection)
+        if borrows:
+            if borrows >= 3:
+                raise MemberHasMaximum
+        
+        return self.set_avilable(id, False, member_id, connection)
+    
+    def is_borrowed_to(self, id:int, member_id:int, connection) -> bool:
+        """Checkes if the book borrowed to a spesific member."""
+        cursor = connection.cursor()
+
+        cursor.execute("SELECT * FROM books WHERE id = %s and borrowed_by_member_id = %s", (id, member_id))
+        row = cursor.fetchone()
+        cursor.close()
+        
+        return True if row else False
+
+    def return_book(self, id:int, member_id:int, connection) -> bool:
+        """docstring"""
+        the_book = self.get_book_by_id(id, connection)
+        
+        is_borroed_to_him = self.is_borrowed_to(id, member_id, connection)
+        if not is_borroed_to_him:
+            raise NotBorroedToHim
+
+        return self.set_avilable(id, True, None, connection)
 
 
 if __name__ == "__main__":

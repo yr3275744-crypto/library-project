@@ -10,6 +10,8 @@ class MemberType(BaseModel):
     is_active: Optional[bool] = None
     total_borrows: Optional[int] = None
 
+class MemberNotFound(Exception):
+    pass
 
 class MemberDB:
     """docstring"""
@@ -56,14 +58,14 @@ class MemberDB:
         row = cursor.fetchone()
 
         cursor.close()
+        if not row:
+            raise MemberNotFound("The member does not found")
         return row
 
     def update_member(self, id:int, data:MemberType, connection:connector.PooledMySQLConnection | connector.MySQLConnectionAbstract) -> int:
         """docstring"""
         cursor = connection.cursor(dictionary = True)
         the_member = self.check_is_exists()
-        if not the_member:
-            raise ValueError("The member does not found")
         
         body = data.model_dump(exclude_none= True)
         values_list = list(body.values()) + [id]
@@ -79,8 +81,6 @@ class MemberDB:
     def deactivate_mumber(self, id:int, connection:connector.PooledMySQLConnection | connector.MySQLConnectionAbstract) -> bool:
         """docstring"""
         the_member = self.check_is_exists(id, connection)
-        if not the_member:
-            raise ValueError("The member does not found")
 
         cursor = connection.cursor()
 
@@ -94,8 +94,6 @@ class MemberDB:
     def activate_member(self, id:int, connection:connector.PooledMySQLConnection | connector.MySQLConnectionAbstract) -> bool:
         """docstring"""
         the_member = self.check_is_exists(id, connection)
-        if not the_member:
-            raise ValueError("The member does not found")
 
         cursor = connection.cursor()
 
@@ -106,11 +104,26 @@ class MemberDB:
 
         return True
 
+    def increment_borrows(self, id:int, connection) -> int:
+        """docstring"""
+        the_member = self.check_is_exists(id, connection)
+        
+        cursor = connection.cursor()
+        cursor.execute("UPDATE members SET total_borrows = total_borrows + 1 WHERE id = %s", (id,))
+
+        connection.commit()
+        cursor.fetchall()
+        count = cursor.rowcount
+        cursor.close()
+        return count
+
+
 if __name__ == "__main__":
     import database.db_connection as db_connection
     m = MemberDB()
     connection = db_connection.Connection().get_connection()
-    print(m.get_member_by_id(2, connection))
+    # print(m.get_member_by_id(2, connection))
+    print(m.increment_borrows(3, connection))
     # t = MemberType(name = "jjjj")
 
     # id = m.update_member(15, t, connection)

@@ -1,7 +1,7 @@
 #TODO : check if i shoode create difult value is_active in databas or in pydantic.
 import mysql
 from fastapi import APIRouter, HTTPException
-from database.member_db import MemberDB, MemberType
+from database.member_db import MemberDB, MemberType, MemberNotFound
 from database.db_connection import Connection
 
 
@@ -60,8 +60,9 @@ def get_member_by_id(id:int):
         row = member_db.get_member_by_id(id, connection)
         if row:
             return row
-        else:
-            raise HTTPException(status_code = 404, detail = "The member is not found")
+
+    except MemberNotFound:
+        raise HTTPException(status_code= 404, detail = "The member does not found")
     
     except Exception:
         raise HTTPException(status_code = 500, detail= "Somthing get wrong")
@@ -80,7 +81,7 @@ def update_member(id:int, body:MemberType):
         if is_updated:
             return {"message": f"The member {id} is updated successfully"}
     
-    except ValueError:
+    except MemberNotFound:
         raise HTTPException(status_code= 404, detail = "The member does not found")
     
     except Exception:
@@ -99,7 +100,7 @@ def deactivate_member(id:int) -> dict:
         is_deactive = member_db.deactivate_mumber(id, connection)
         return {"message": f"The member {id} is deactivated successfully"}
 
-    except ValueError:
+    except MemberNotFound:
         raise HTTPException(status_code= 404, detail = "The member does not found")
     
     except Exception:
@@ -118,7 +119,7 @@ def activate_member(id:int) -> dict:
         is_deactive = member_db.activate_member(id, connection)
         return {"message": f"The member {id} is deactivated successfully"}
 
-    except ValueError:
+    except MemberNotFound:
         raise HTTPException(status_code= 404, detail = "The member does not found")
     
     except Exception:

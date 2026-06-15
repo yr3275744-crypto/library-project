@@ -31,40 +31,7 @@ def get_all_books():
         return books_managr.get_all_books(connection)
 
     except Exception:
-        raise HTTPException(status_code=500, detail= "Somthing get wrong")
-    
-    finally:
-        if connection:
-            connection.close()
-
-@router.put("/books/{id}/borrow/{member_id}", status_code = 200)
-def borrow_to_member(id:int, member_id:int):
-    """docstring"""
-    connection = None
-    try:
-        connection = Connection().get_connection()
-        member_db_instance = member_db.MemberDB()
-        member = member_db_instance.get_member_by_id(member_id, connection)
-        if not member:
-            raise HTTPException(status_code = 404, detail = "The member does not found")
-        
-        if not member.get("is_active"):
-            raise HTTPException(status_code = 409, detail = "The member is not active.")
-        
-        borrow = books_managr.set_available(id, False, member_id, connection)
-        return {"message": f"The book {id} borroew to the member {member_id}"}
-    
-    except book_db.BookNotFound:
-        raise HTTPException(status_code= 404, detail= "The book does not found")
-    
-    except book_db.BookNotAvailable:
-        raise HTTPException(status_code = 409, detail = "The book is not available")
-    
-    except book_db.MemberHasMaximum:
-        raise HTTPException(status_code = 409, detail = "The member has exceeded the maximum number of available books.")
-    
-    # except Exception:
-    #     raise HTTPException(status_code=500, detail= "Somthing get wrong")
+        raise HTTPException(status_code=500, detail= "Something get wrong")
     
     finally:
         if connection:
@@ -78,13 +45,13 @@ def get_by_id(id:int):
         connection = Connection().get_connection()
         row = books_managr.get_book_by_id(id, connection)
         
-        if not row:
-            raise HTTPException(status_code = 404, detail = "The book is not found")
-        
         return row
     
+    except book_db.BookNotFound:
+        raise HTTPException(status_code= 404, detail= "The book does not found")
+    
     except Exception:
-        raise HTTPException(status_code=500, detail= "Somthing get wrong")
+        raise HTTPException(status_code=500, detail= "Something get wrong")
     
     finally:
         if connection:
@@ -106,9 +73,70 @@ def update_book(id:int, body:BookType):
         raise HTTPException(400, detail = "Invalid input. You must enter a valid name, email and gener.")
     
     except Exception:
-        raise HTTPException(status_code=500, detail= "Somthing get wrong")
+        raise HTTPException(status_code=500, detail= "Something get wrong")
     
     finally:
         if connection:
             connection.close()
 
+
+@router.put("/books/{id}/borrow/{member_id}", status_code = 200)
+def borrow_to_member(id:int, member_id:int):
+    """docstring"""
+    connection = None
+    try:
+        connection = Connection().get_connection()
+        member_db_instance = member_db.MemberDB()
+        member = member_db_instance.get_member_by_id(member_id, connection)
+        
+        if not member.get("is_active"):
+            raise HTTPException(status_code = 409, detail = "The member is not active.")
+        
+        borrow = books_managr.borrow_book(id, member_id, connection)
+        count = member_db_instance.increment_borrows(member_id, connection)
+        return {"message": f"The book {id} borrowed to the member {member_id}"}
+    
+    except book_db.BookNotFound:
+        raise HTTPException(status_code= 404, detail= "The book does not found")
+    
+    except book_db.BookNotAvailable:
+        raise HTTPException(status_code = 409, detail = "The book is not available")
+    
+    except book_db.MemberHasMaximum:
+        raise HTTPException(status_code = 409, detail = "The member has exceeded the maximum number of available books.")
+    
+    except member_db.MemberNotFound:
+        raise HTTPException(status_code= 404, detail = "The member does not found")
+    
+    except Exception:
+        raise HTTPException(status_code=500, detail= "Something get wrong")
+    
+    finally:
+        if connection:
+            connection.close()
+
+@router.put("/books/{id}/return/{member_id}")
+def return_book(id:int, member_id:int):
+    """docstring"""
+    connection = None
+    try:
+        connection = Connection().get_connection()
+        member_db_instance = member_db.MemberDB()
+        member = member_db_instance.get_member_by_id(member_id, connection)
+
+        is_returnd = books_managr.return_book(id, member_id, connection)
+        if is_returnd:
+            return {"message":f"The book {id} is returnd successfully"}
+
+    except book_db.BookNotFound:
+        raise HTTPException(status_code= 404, detail= "The book does not found")
+
+    except book_db.NotBorroedToHim:
+        raise HTTPException(status_code = 409, detail = "The book is not borrowed to this member.")
+
+    # except Exception:
+    #     raise HTTPException(status_code=500, detail= "Something get wrong")
+    
+    finally:
+        if connection:
+            connection.close()
