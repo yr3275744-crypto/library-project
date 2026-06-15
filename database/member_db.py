@@ -119,16 +119,43 @@ class MemberDB:
         else:
             raise MemberDoesNotActive 
 
+    def count_active_members(self, connection) -> int:
+        """docstring"""
+        cursor = connection.cursor(dictionary = True)
+
+        cursor.execute("SELECT COUNT(*) as count FROM members WHERE is_active = TRUE")
+
+        row = cursor.fetchone()
+        cursor.close()
+        return row.get("count")
+
+    def get_top_number(self, connection) -> int:
+        """docstring"""
+        cursor = connection.cursor(dictionary = True)
+
+        cursor.execute("SELECT max(total_borrows) as max_total_borrows FROM members")
+
+        row = cursor.fetchone()
+        max_total_borrows = row.get("max_total_borrows")
+
+        cursor.execute("SELECT * FROM members WHERE total_borrows = %s", (max_total_borrows,))
+
+        top_member = cursor.fetchone()
+        if not top_member:
+            return {}
+        else:
+            return {"member_id": top_member.get("id"), "borrowed":top_member.get("total_borrows")}
 
 if __name__ == "__main__":
     import database.db_connection as db_connection
     m = MemberDB()
     connection = db_connection.Connection().get_connection()
     # print(m.get_member_by_id(2, connection))
-    print(m.increment_borrows(3, connection))
+    # print(m.increment_borrows(3, connection))
     # t = MemberType(name = "jjjj")
-
+    print(m.count_active_members(connection))
+    print(m.get_top_number(connection))
     # id = m.update_member(15, t, connection)
     # print(id)
     # print(m.activate_member(1, connection))
-    # connection.close()
+    connection.close()

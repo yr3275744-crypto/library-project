@@ -29,3 +29,25 @@ def get_count_by_genre():
     finally:
         if connection:
             connection.close()
+
+@router.get("/reports/summary")
+def get_summary():
+    """docstring"""
+    connection = None
+    try:
+        connection = Connection().get_connection()
+        
+        summary_dict = {}
+        summary_dict["total_books"] = books_manager.count_total_books(connection)
+        summary_dict["available_books"] = books_manager.count_available_books(connection)
+        summary_dict["currently_borrowed"] = books_manager.count_borrowed_books(connection)
+        summary_dict["active_members"] = members_manager.count_active_members(connection)
+
+        return summary_dict
+    
+    except Exception:
+        raise HTTPException(status_code = 500, detail = "Something get wrong")
+    
+    finally:
+        if connection:
+            connection.close()
