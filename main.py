@@ -16,7 +16,9 @@ import logging
 logger = logging.getLogger(__name__)
 
 def app_server():
-    """docstring"""
+    """Play manage_library server. get calles, connect to database and return the result.
+    save logs in logs/app.log
+    """
     FORMAT = '%(asctime)s %(levelname)s %(message)s'
     logging.basicConfig(filename = "logs/app.log", level= logging.DEBUG, format= FORMAT)
     logger.info("Play app")

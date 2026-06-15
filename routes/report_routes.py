@@ -2,6 +2,9 @@ from fastapi import APIRouter, HTTPException
 import database.book_db as book_db
 import database.member_db as member_db
 from database.db_connection import Connection
+import logging
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -9,9 +12,10 @@ books_manager = book_db.BookDB()
 members_manager = member_db.MemberDB()
 
 @router.get("/reports/books-by-genre")
-def get_count_by_genre():
-    """play the method from BooksDB"""
+def get_count_by_genre() -> list:
+    """Return list of genre and how many books have in this type."""
     connection = None
+    logger.info("GET /reports/books-by-genre is called")
     try:
         connection = Connection().get_connection()
         count_by_genre_list = []
@@ -32,9 +36,10 @@ def get_count_by_genre():
             connection.close()
 
 @router.get("/reports/summary")
-def get_summary():
-    """docstring"""
+def get_summary() -> dict:
+    """Return dict of basic summery."""
     connection = None
+    logger.info("GET /reports/summary is called")
     try:
         connection = Connection().get_connection()
         
@@ -54,9 +59,11 @@ def get_summary():
             connection.close()
 
 @router.get("/reports/top-member")
-def get_top_member():
-    """docstring"""
+def get_top_member() -> dict:
+    """Return the top member,
+    that he have the largest total borrows."""
     connection = None
+    logger.info("GET /reports/top-member is called")
     try:
         connection = Connection().get_connection()
 

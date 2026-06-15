@@ -1,31 +1,45 @@
 import mysql
 from fastapi import APIRouter, HTTPException
+import logging
 from database.book_db import BookDB, BookType
 from database.db_connection import Connection
 import database.member_db as member_db
-
 import database.book_db as book_db
 
 books_managr = BookDB()
 
+logger = logging.getLogger(__name__)
+
 router = APIRouter()
 
 @router.post("/books", status_code = 201)
-def create_book(body:BookType):
-    """docstring"""
+def create_book(body:BookType) -> dict:
+    """Create a new book, save it in book table in library database.
+    return success message json.
+    raise error if the title or author is empty, 
+    or if the genre not in valid genre tuple."""
     connection = None
+    logger.info("POST /books is called")
     try:
         connection = Connection().get_connection()
         id = books_managr.create_book(body, connection)
         return {"message": f"The book {id} is created succesffully"}
 
     except ValueError as e:
-        raise HTTPException(400, detail = "Invalid input. You must enter a valid name, email and gener.")
+        raise HTTPException(400, detail = "Invalid input. You must enter a valid title, author and gener.")
     
+    except Exception:
+        raise HTTPException(status_code=500, detail= "Something get wrong")
+    
+    finally:
+        if connection:
+            connection.close()
+
 @router.get("/books")
-def get_all_books():
-    """docstring"""
+def get_all_books() -> list:
+    """Return all boks from books table in the ibrary database."""
     connection = None
+    logger.info("GET /books is called")
     try:
         connection = Connection().get_connection()
         return books_managr.get_all_books(connection)
@@ -38,9 +52,12 @@ def get_all_books():
             connection.close()
 
 @router.get("/books/{id}")
-def get_by_id(id:int):
-    """docstring"""
+def get_by_id(id:int) -> dict:
+    """Return the book by id if exists.
+    get id.
+    raise exception if book does not found."""
     connection = None
+    logger.info("GET /books/{id} is called")
     try:
         connection = Connection().get_connection()
         row = books_managr.get_book_by_id(id, connection)
@@ -58,9 +75,13 @@ def get_by_id(id:int):
             connection.close()
 
 @router.put("/books/{id}")
-def update_book(id:int, body:BookType):
-    """docstribg"""
+def update_book(id:int, body:BookType) -> dict:
+    """Update a booke from books table.
+    return success message json.
+    raise error if book not found or
+    invalid input"""
     connection = None
+    logger.info("PUT /books/{id} is called")
     try:
         connection = Connection().get_connection()
         is_updated = books_managr.update_book(id, body, connection)
@@ -70,7 +91,7 @@ def update_book(id:int, body:BookType):
         raise HTTPException(status_code= 404, detail= "The book does not found")
 
     except ValueError as e:
-        raise HTTPException(400, detail = "Invalid input. You must enter a valid name, email and gener.")
+        raise HTTPException(400, detail = "Invalid input. You must enter a valid title, author and gener.")
     
     except Exception:
         raise HTTPException(status_code=500, detail= "Something get wrong")
@@ -81,9 +102,16 @@ def update_book(id:int, body:BookType):
 
 
 @router.put("/books/{id}/borrow/{member_id}", status_code = 200)
-def borrow_to_member(id:int, member_id:int):
-    """docstring"""
+def borrow_to_member(id:int, member_id:int) -> dict:
+    """borrow to member from members table a booke from books table.
+    return success message json,
+    raise error if book not found, 
+    book not available,
+    member not found,
+    member allready have max books he can borrow 
+    or member not active."""
     connection = None
+    logger.info("PUT /books/{id}/borrow/{member_id} is called")
     try:
         connection = Connection().get_connection()
         member_db_instance = member_db.MemberDB()
@@ -118,9 +146,17 @@ def borrow_to_member(id:int, member_id:int):
             connection.close()
 
 @router.put("/books/{id}/return/{member_id}")
-def return_book(id:int, member_id:int):
-    """docstring"""
+def return_book(id:int, member_id:int) -> dict:
+    """Return books borroed to athe specific member.
+    get book id and member id.
+    return success message json,
+    raise error if book not found, 
+    book not available,
+    book not borrowed,
+    member not found or
+    the book is not borrowed to him."""
     connection = None
+    logger.info("PUT /books/{id}/return/{member_id} is called")
     try:
         connection = Connection().get_connection()
         member_db_instance = member_db.MemberDB()

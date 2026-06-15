@@ -128,7 +128,7 @@ class MemberDB:
         cursor.close()
         return row.get("count")
 
-    def get_top_number(self, connection) -> int:
+    def get_top_number(self, connection) -> dict:
         """docstring"""
         cursor = connection.cursor(dictionary = True)
 
