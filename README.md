@@ -39,9 +39,9 @@ library-api/
 
 - id : primary key. integer, auto-increment, unique
 
-- titel : book title. up to 50 characters
+- title : book title. up to 50 characters
 
-- autor : autor's name. up to 50 characters
+- author : autor's name. up to 50 characters
 
 - genre : a genre Fiction | Non-Fiction | Science | History | Other
 
@@ -55,9 +55,9 @@ library-api/
 
 - name : the member's name. up to 50 characters
 
-- email : the email addres. uniqe.
+- email : the email addres. unique.
 
-- is_active : if themember is activ = True, he can borrow a book. else False
+- is_active : if themember is active = True, he can borrow a book. else False
 
 - total_borrows : the total of borrows. integer, auto-increment.
 
@@ -131,18 +131,18 @@ Each operation is logged to the app.log file
 
 ### Create docker container 
 
-docker run --name library -e MYSQL_ROOT_PASSWORD=library_manager -e MYSQL_DATABASE=library_db -p 3306:3306 -d mysql:8
+```docker run --name library -e MYSQL_ROOT_PASSWORD=library_manager -e MYSQL_DATABASE=library_db -p 3306:3306 -d mysql:8```
 
 ### Clone the files
-git clone https://github.com/yr3275744-crypto/library-project.git
+```git clone https://github.com/yr3275744-crypto/library-project.git```
 
 ### create venv - windose
-py -m venv venv
+```py -m venv venv```
 
-.\venv\Scripts\activate
+```.\venv\Scripts\activate```
 
-### Install the repuirements
-py -m pip install requirements.txt
+### Install the requirements
+```py -m pip install requirements.txt```
 
 ### Play the server
-py main.py
+```py main.py```
