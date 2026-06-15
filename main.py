@@ -11,9 +11,15 @@ import uvicorn
 from fastapi import FastAPI
 from routes import book_routes, member_routes, report_routes
 from database import db_connection
+import logging
+
+logger = logging.getLogger(__name__)
 
 def app_server():
     """docstring"""
+    FORMAT = '%(asctime)s %(levelname)s %(message)s'
+    logging.basicConfig(filename = "logs/app.log", level= logging.DEBUG, format= FORMAT)
+    logger.info("Play app")
     connection = db_connection.Connection()
     the_initalizer = db_connection.Initalizer(connection)
     the_initalizer.create_books_table()
